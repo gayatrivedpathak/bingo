@@ -5,7 +5,6 @@ const game = JSON.parse(readFileSync('./game.json', 'utf8'));
 const createPlayers = function (playerNames, game) {
   return playerNames.reduce((players, name, index) => {
     players[name] = {
-      // eslint-disable-next-line no-magic-numbers
       board: game['player' + (index + 1)],
       matchedCount: 0
     };
@@ -22,5 +21,4 @@ const gameState = function (game) {
   };
 };
 
-// eslint-disable-next-line no-console
 console.log(JSON.stringify(gameState(game)));
