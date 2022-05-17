@@ -1,5 +1,4 @@
-/* eslint-disable no-magic-numbers */
-const { writeFileSync, readFileSync } = require('fs');
+const fs = require('fs');
 // const { displayGame } = require('./displayBoard.js');
 
 const isAllSame = function ({ board }, positions) {
@@ -13,27 +12,28 @@ const isAllSame = function ({ board }, positions) {
 
 const updateCount = function (gameState, matchingPositions) {
   const { user, comp } = gameState.players;
-  gameState.players.comp.matchedCount = 0;
-  gameState.players.user.matchedCount = 0;
+  comp.matchedCount = 0;
+  user.matchedCount = 0;
   const positionsList = Object.values(matchingPositions);
   for (let index = 0; index < positionsList.length; index++) {
     if (isAllSame(user, positionsList[index])) {
-      gameState.players.user.matchedCount += 1;
+      user.matchedCount += 1;
     }
     if (isAllSame(comp, positionsList[index])) {
-      gameState.players.comp.matchedCount += 1;
+      comp.matchedCount += 1;
     }
   }
   return gameState;
 };
 
 const updateState = function (gameState, choice) {
-  for (let index = 0; index < gameState.players.user.board.length; index++) {
-    if (gameState.players.user.board[index] === choice) {
-      gameState.players.user.board[index] = '*';
+  const { players } = gameState;
+  for (let index = 0; index < players.user.board.length; index++) {
+    if (players.user.board[index] === choice) {
+      players.user.board[index] = '*';
     }
-    if (gameState.players.comp.board[index] === choice) {
-      gameState.players.comp.board[index] = '*';
+    if (players.comp.board[index] === choice) {
+      players.comp.board[index] = '*';
     }
   }
   return gameState;
@@ -57,8 +57,29 @@ const playGame = function (game, gameState, [choice, player]) {
   return currentState;
 };
 
-const bingo = JSON.parse(readFileSync('./game.json', 'utf8'));
-const gameState = JSON.parse(readFileSync('./gameState.json', 'utf8'));
+const readFile = function (fileName) {
+  try {
+    return JSON.parse(fs.readFileSync(fileName, 'utf8'));
+  } catch (error) {
+    console.log('Something went wrong!');
+    process.exit(4);
+  }
+};
 
-const updatedState = playGame(bingo, gameState, process.argv.slice(2));
-writeFileSync('./gameState.json', JSON.stringify(updatedState));
+const writeJSONFile = function (fileName, content) {
+  try {
+    fs.writeFileSync(fileName, JSON.stringify(content));
+  } catch (error) {
+    console.log('Something went wrong!');
+    process.exit(4);
+  }
+};
+
+const main = function () {
+  const bingo = readFile('./game.json');
+  const gameState = readFile('./gameState.json');
+  const updatedState = playGame(bingo, gameState, process.argv.slice(2));
+  writeJSONFile('./gameState.json', updatedState);
+};
+
+main();
